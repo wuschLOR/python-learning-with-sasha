@@ -80,27 +80,6 @@ def change_grid_after_shooting(battlefield, tile_index):
     return(battlefield)
 
 
-def get_valid_input(battlefield):
-    answer_is_valid =  False
-    itile = [0, 0]
-    while not answer_is_valid:
-        human_cell = input('Shoot at me HUMAN! ')
-        print ''
-        
-        if len(human_cell) == 2:
-            itile[0] = ord(human_cell[0])-ord('A')
-            itile[1] = ord(human_cell[1])-ord('1')
-            if (itile[0] < settings['grid']['rownumber'] and # change!!
-                itile[1] < settings['grid']['rownumber'] and # change!!
-                itile[0] >= 0 and 
-                itile[1] >= 0 and
-                (not crater_allready_there(battlefield, itile))
-                ):
-                answer_is_valid = True
-            
-    return(itile)
-
-
 def place_ship(battlefield, ship_size):
     
     # per dafault the position isn't valid 
@@ -187,13 +166,13 @@ for iRow in range(settings['grid']['rownumber']):
 
 
 # create ships
-grid = place_ship(grid ,  2)
-grid = place_ship(grid ,  3)
-grid = place_ship(grid ,  2)
+grid = place_ship(grid,  2)
+grid = place_ship(grid,  3)
+grid = place_ship(grid,  2)
 
 windowsurface = pygame.display.set_mode(
     (settings['grid']['colnumber']*settings['grid']['allsize'],
-    settings['grid']['rownumber']*settings['grid']['allsize']),
+                  settings['grid']['rownumber']*settings['grid']['allsize']),
     0,
     32)
 pygame.display.set_caption(settings['title'])
@@ -210,7 +189,7 @@ while not human_is_victorious(grid):
     print '#########################'
     print ''
     
-    turn = turn+1
+    turn = turn + 1
     
     draw_grid(grid)
     
@@ -236,11 +215,7 @@ while not human_is_victorious(grid):
 
 if human_is_victorious(grid):
     print 'THE WINNER IS YOU'
-    pass
 else:
     print 'ALL YOUR BASE BELONG TO US'
-    pass
-
-
 
             
