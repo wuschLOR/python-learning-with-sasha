@@ -1,40 +1,50 @@
 import random
+import pygame
+
+pygame.init()
 
 # create dictionary
 settings = {}
-settings['tile'] = {'water' : '~',
-                    'ship' : '~',
-                    'miss' : '.',
-                    'hit' : 'X'}
-settings['grid'] = {'rownumber':9, 
-                    'colnumber':9}
+settings['title'] = 'Battleship'
+settings['tile'] = {'water' : pygame.Color('blue'),
+                    'ship'  : pygame.Color('grey'),
+                    'miss'  : pygame.Color('black'),
+                    'hit'   : pygame.Color('red')}
+settings['tile_print'] = {'water' : pygame.Color('blue'),
+                          'ship'  : pygame.Color('blue'),
+                          'miss'  : pygame.Color('black'),
+                          'hit'   : pygame.Color('red')}
+settings['grid'] = {'rownumber':5, 
+                    'colnumber':5,
+                    'allsize':80}
+
+settings['frame'] = {'linewidth' : 2,
+                     'color' : pygame.Color('white')
+                     }
 
 random.seed(5)
 
 def draw_grid(battlefield):
     # draw the battlefield
-    numberRow = ord('A')
-    numberCol = 1
-
-    # print out the numbers aboth the colums
-    print (' ', ' ', end='')
-    for col in battlefield[0]:
-        print (numberCol, ' ', end='')
-        numberCol = numberCol + 1
-        
-    print()
-
-    # print every row with the coresponding letter in front 
+    
+    irow = -1
     for row in battlefield:
-        print (chr(numberRow), ' ', end='')
-        numberRow = numberRow + 1
-        
+        irow = irow + 1
+        icol = -1
         for cell in row:
-            print (settings['tile'][cell], ' ', end='')
+            icol = icol + 1
+            # doing the celldimentions (L left, R top , W width, H height)
+            celdim = (irow * settings['grid']['allsize'],
+                      icol * settings['grid']['allsize'], 
+                      settings['grid']['allsize'],  
+                      settings['grid']['allsize'])
             
-        print()   
-        
-        
+            # drawing on the screen
+            pygame.draw.rect(windowsurface, settings['tile_print'][cell], celdim)
+            pygame.draw.rect(windowsurface, settings['frame']['color'], celdim , settings['frame']['linewidth'])
+            print irow, icol, celdim , cell
+
+       
 def crater_allready_there(battlefield, tile_index):
     # check if the tile was allready victem of the angry HUMAN
     if (battlefield[tile_index[0]][tile_index[1]] == 'miss' or
@@ -58,8 +68,8 @@ def tile_allready_occupied(battlefield, tile_index, conditon_array):
     
 def change_grid_after_shooting(battlefield, tile_index):
     # change one tile to a new value
-    #print(tile_index)
-    #print(battlefield[tile_index[0]][tile_index[1]])
+    #print tile_index
+    #print battlefield[tile_index[0]][tile_index[1]]
 
     if battlefield[tile_index[0]][tile_index[1]] == 'water':
         battlefield[tile_index[0]][tile_index[1]] = 'miss'
@@ -75,7 +85,7 @@ def get_valid_input(battlefield):
     itile = [0, 0]
     while not answer_is_valid:
         human_cell = input('Shoot at me HUMAN! ')
-        print('')
+        print ''
         
         if len(human_cell) == 2:
             itile[0] = ord(human_cell[0])-ord('A')
@@ -114,14 +124,14 @@ def place_ship(battlefield, ship_size):
         ship_row = random.randint(0, row_limit)
         ship_col = random.randint(0, col_limit)
         
-        print('ship_row',ship_row)
-        print('ship_col',ship_col)
+        #print 'ship_row',ship_row
+        #print 'ship_col',ship_col
         
         #check for occupation
         occupation = []
         for tiles in (range(ship_size)):
             #occupation.append(tile_allready_occupied(battlefield, [ship_row,ship_col], 'ship'))
-            #print(occupation)
+            #print occupation
             occupation=False
             
         if occupation == False:
@@ -159,47 +169,77 @@ def human_is_victorious(battlefield):
 
 grid = []
 for iRow in range(settings['grid']['rownumber']):
-    #print(iRow)
+    #print iRow
     grid.append([])
     for iCol in range(settings['grid']['colnumber']):
-        #print(iCol)
+        #print iCol
         grid[iRow].append('water')
         
 
 # debug
-#print(grid)
+#print grid
 #grid[1][1] = 'ship'
 #grid[1][2] = 'hit'
 ##grid[2][1] = 'water'
 #grid[2][2] = 'miss'
-#print(grid)
+#print grid
 # /debung
 
 
 # create ships
 grid = place_ship(grid ,  2)
+grid = place_ship(grid ,  3)
+grid = place_ship(grid ,  2)
+
+windowsurface = pygame.display.set_mode(
+    (settings['grid']['colnumber']*settings['grid']['allsize'],
+    settings['grid']['rownumber']*settings['grid']['allsize']),
+    0,
+    32)
+pygame.display.set_caption(settings['title'])
+
+
 
 turn=1
 while not human_is_victorious(grid): 
+
+
     
-    print('#########################')
-    print('TURN:',turn)
-    print('#########################')
-    print('')
+    print '#########################'
+    print 'TURN:',turn
+    print '#########################'
+    print ''
     
     turn = turn+1
     
     draw_grid(grid)
-        
-    human_cell_index = get_valid_input(grid)
-
-    grid = change_grid_after_shooting(grid, human_cell_index)
-
+    
+    pygame.display.update() # flip
+    
+    for event in pygame.event.get():
+        # exit condition when Alt F4
+        if event.type == pygame.QUIT:
+            GameOver=True
+            
+        # mouse pressed condition    
+        if pygame.mouse.get_pressed()[0] == 1:
+            mouse_pos = pygame.mouse.get_pos()
+            print "pressed" , mouse_pos
+            
+            human_cell_index = [0 , 1]
+            human_cell_index[0] = mouse_pos[0] / settings['grid']['allsize']
+            human_cell_index[1] = mouse_pos[1] / settings['grid']['allsize']
+            print "pressed" , human_cell_index
+            
+            grid = change_grid_after_shooting(grid, human_cell_index)
+            
 
 if human_is_victorious(grid):
-    print('THE WINNER IS YOU')
+    print 'THE WINNER IS YOU'
+    pass
 else:
-    print('ALL YOUR BASE BELONG TO US')
+    print 'ALL YOUR BASE BELONG TO US'
+    pass
 
 
 
